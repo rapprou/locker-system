@@ -1,0 +1,29 @@
+# Créer le fichier .gitignore
+echo "# Dependencies
+/vendor/
+/node_modules/
+
+# Environment files
+.env
+.env.backup
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache files
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+
+# Misc
+.DS_Store
+Thumbs.db" > .gitignore
