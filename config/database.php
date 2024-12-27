@@ -3,6 +3,6 @@ return [
     'host' => 'localhost',
     'dbname' => 'locker_system',
     'username' => 'root',
-    'password' => 'root', // Le mot de passe que nous avons défini précédemment
+    'password' => 'root', 
     'charset' => 'utf8mb4'
 ];

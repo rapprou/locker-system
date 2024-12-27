@@ -1,9 +1,10 @@
 <?php ob_start(); ?>
 
 <div class="details-container">
-    <!-- Information du casier -->
+
+    <!-- Vue formulaire détail casier -->
     <div class="details-header">
-        <h2>Détails du Casier N°<?= htmlspecialchars($locker['locker_number']) ?></h2>
+        <h2>Détails Casier N°<?= htmlspecialchars($locker['locker_number']) ?></h2>
         <div class="status-badge status-<?= strtolower($locker['status']) ?>">
             <?= htmlspecialchars($locker['status']) ?>
         </div>
@@ -50,37 +51,45 @@
     <?php endif; ?>
 
     <!-- Historique des attributions -->
-    <div class="details-card">
-        <h3>Historique des Attributions</h3>
-        <?php if (!empty($history)): ?>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Utilisateur</th>
-                        <th>Statut</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($history as $record): ?>
-                    <tr>
-                        <td><?= date('d/m/Y', strtotime($record['assignment_date'])) ?></td>
-                        <td><?= htmlspecialchars($record['first_name'] . ' ' . $record['last_name']) ?></td>
-                        <td>
-                            <span class="status-badge status-<?= strtolower($record['status']) ?>">
-                                <?= htmlspecialchars($record['status']) ?>
-                            </span>
-                        </td>
-                        <td><?= nl2br(htmlspecialchars($record['notes'])) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p class="no-data">Aucun historique d'attribution disponible</p>
-        <?php endif; ?>
-    </div>
+<div class="details-card">
+    <h3>Historique des Attributions</h3>
+    <?php if (!empty($history)): ?>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Utilisateur</th>
+                    <th>Statut</th>
+                    <th>Notes</th>
+                    <th>Service</th>
+                    <th>TS</th>
+                    <th>Date retour prévue</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($history as $record): ?>
+                <tr>
+                    <td><?= date('d/m/Y', strtotime($record['assignment_date'])) ?></td>
+                    <td><?= htmlspecialchars($record['first_name'] . ' ' . $record['last_name']) ?></td>
+                    <td>
+                        <span class="status-badge status-<?= strtolower($record['status']) ?>">
+                            <?= htmlspecialchars($record['status']) ?>
+                        </span>
+                    </td>
+                    <td><?= nl2br(htmlspecialchars($record['notes'])) ?></td>
+                    <td><?= htmlspecialchars($record['service']) ?></td>
+                    <td><?= htmlspecialchars($record['ts_name']) ?></td>
+                    <td><?= $record['expected_return_date'] ? date('d/m/Y', strtotime($record['expected_return_date'])) : '-' ?></td>
+                    <td><?= htmlspecialchars($record['assignment_type'] ?? 'Attribution standard') ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p class="no-data">Aucun historique d'attribution disponible</p>
+    <?php endif; ?>
+</div>
 
     <!-- Actions -->
     <div class="details-actions">

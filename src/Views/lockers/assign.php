@@ -1,5 +1,7 @@
 <?php ob_start(); ?>
 
+<!-- Vue formulaire attribution casier -->
+
 <div class="assign-form-container">
     <h2>Attribution d'un Casier</h2>
 
@@ -17,12 +19,12 @@
         </div>
 
         <div class="form-group">
-            <label for="user_name">Nom complet de l'utilisateur :</label>
+            <label for="user_name">Nom complet :</label>
             <input type="text" id="user_name" name="user_name" required class="form-control">
         </div>
 
         <div class="form-group">
-            <label for="social_worker">Nom du Travailleur Social :</label>
+            <label for="social_worker">Travailleur Social :</label>
             <input type="text" id="social_worker" name="social_worker" required class="form-control">
         </div>
 
@@ -50,7 +52,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="button">Attribuer le casier</button>
+            <button type="submit" class="button">Attribution casier</button>
             <a href="<?= BASE_PATH ?>/lockers" class="button button-secondary">Annuler</a>
         </div>
     </form>

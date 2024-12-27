@@ -171,6 +171,7 @@ class LockerController extends BaseController {
         }
     
         // Récupérer l'attribution actuelle si le casier est attribué
+        
         $currentAssignment = null;
         if ($locker['status'] === 'ATTRIBUE') {
             $currentAssignment = $this->assignmentModel->getCurrentAssignment($id);

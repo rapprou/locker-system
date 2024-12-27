@@ -23,14 +23,14 @@
             <div class="flash-message flash-<?= $_SESSION['flash']['type'] ?>">
                 <?= $_SESSION['flash']['message'] ?>
             </div>
-            <?php unset($_SESSION['flash']); ?>
+        <?php unset($_SESSION['flash']); ?>
         <?php endif; ?>
 
         <?php if (isset($content)) : echo $content; endif; ?>
     </main>
 
     <footer>
-        <p>&copy; <?= date('Y') ?> Gestion de Casiers</p>
+        <p>&copy; <?= date('Y') ?> GAMMES Gestion de Casiers</p>
     </footer>
 </body>
 </html>
