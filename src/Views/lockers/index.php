@@ -59,13 +59,12 @@
                                     ? date('d/m/Y', strtotime($locker['assignment_date'])) 
                                     : '-' ?>
                             </td>
-                            <!-- retirer code ja -->
-                            <td>
-                                <?= isset($locker['expected_return_date']) 
-                                    ? date('d/m/Y', strtotime($locker['expected_return_date'])) 
+                            <!-- code fait par ja en mode test à verifier -->
+                            <td><?= isset($locker['return_date']) 
+                                    ? date('d/m/Y', strtotime($locker['return_date'])) 
                                     : '-' ?>
                             </td>
-                             <!-- Retirer code ja -->
+                             <!-- Rcode fait ja -->
                             <td class="actions-cell">
                                 <a href="<?= BASE_PATH ?>/lockers/details/<?= $locker['id'] ?>" 
                                    class="button button-small">Détails</a>

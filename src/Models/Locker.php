@@ -22,9 +22,9 @@ class Locker extends BaseModel {
                 u.first_name, u.last_name, la.status as assignment_status
                 FROM {$this->table} l
                 LEFT JOIN locker_assignments la ON l.id = la.locker_id
+                    AND (la.status = 'ACTIVE' OR la.status IS NULL)
                 LEFT JOIN users u ON la.user_id = u.id
-                WHERE la.status = 'ACTIVE' OR la.id IS NULL
-                ORDER BY l.locker_number";
+                ORDER BY CAST(SUBSTRING(l.locker_number, 1) AS SIGNED)";
         return $this->query($sql)->fetchAll();
     }
     
