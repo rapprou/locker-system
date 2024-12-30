@@ -47,13 +47,21 @@
                                     <?= htmlspecialchars($locker['status']) ?>
                                 </span>
                             </td>
+                            <!-- Recuperer noms utilisateurs, status, -->
                             <td>
-                                <?php if ($locker['status'] === 'ATTRIBUE' && isset($locker['first_name'])): ?>
-                                    <?= htmlspecialchars($locker['first_name'] . ' ' . $locker['last_name']) ?>
+                                <?php if ($locker['status'] === 'ATTRIBUE'): ?>
+                                    <?php 
+                                        if (isset($locker['user_name'])) {
+                                            echo htmlspecialchars(trim($locker['user_name']));
+                                        } else {
+                                            echo "-";
+                                        }
+                                    ?>
                                 <?php else: ?>
                                     -
                                 <?php endif; ?>
                             </td>
+                            
                             <td>
                                 <?= isset($locker['assignment_date']) 
                                     ? date('d/m/Y', strtotime($locker['assignment_date'])) 

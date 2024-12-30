@@ -19,10 +19,10 @@ class Locker extends BaseModel {
     
     public function getWithAssignments() {
         $sql = "SELECT l.*, la.assignment_date, la.return_date, 
-                u.first_name, u.last_name, la.status as assignment_status
+                CONCAT(u.first_name, ' ', u.last_name) as user_name,
+                la.status as assignment_status
                 FROM {$this->table} l
                 LEFT JOIN locker_assignments la ON l.id = la.locker_id
-                    AND (la.status = 'ACTIVE' OR la.status IS NULL)
                 LEFT JOIN users u ON la.user_id = u.id
                 ORDER BY CAST(SUBSTRING(l.locker_number, 1) AS SIGNED)";
         return $this->query($sql)->fetchAll();
