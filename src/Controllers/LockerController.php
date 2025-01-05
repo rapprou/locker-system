@@ -99,52 +99,61 @@ class LockerController extends BaseController {
     }
 
     public function return() {
-        if ($this->isPost()) {
-            $postData = $this->getPost();
-            try {
-                // Mettre à jour l'attribution
-                $this->assignmentModel->returnLocker(
-                    $postData['assignment_id'],
-                    [
-                        'return_date' => $postData['return_date'],
-                        'condition' => $postData['condition'],
-                        'notes' => $postData['notes']
-                    ]
-                );
-
-                $_SESSION['flash'] = [
-                    'type' => 'success',
-                    'message' => 'Le casier a été restitué avec succès.'
-                ];
-
-                $this->redirect('/lockers');
-                return;
-            } catch (\Exception $e) {
+        $lockerId = $this->getGet('id');
+        
+        // Gérer l'affichage du formulaire si ce n'est pas un POST
+        if (!$this->isPost()) {
+            // var_dump($lockerId);
+            $assignment = $this->assignmentModel->getCurrentAssignment($lockerId);
+            // var_dump($assignment);
+            // exit;
+            if (!$assignment) {
                 $_SESSION['flash'] = [
                     'type' => 'error',
-                    'message' => 'Une erreur est survenue lors de la restitution du casier.'
+                    'message' => 'Aucune attribution trouvée pour ce casier.'
                 ];
+                $this->redirect('/lockers');
+                return;
             }
+     
+            $data = [
+                'title' => 'Restitution du casier',
+                'assignment' => $assignment
+            ];
+     
+            echo $this->render('lockers/return', $data);
+            return;
         }
+     
+        // Traitement POST
+        $postData = $this->getPost();
+        // var_dump($postData);
+        try {
+            $returnData = [
+                'return_date' => $postData['return_date'],
+                'condition' => $postData['condition'],
+                'notes' => $postData['notes']
+            ];
+            
+            // Vous devez vérifier que ces valeurs existent
+            if (!isset($postData['assignment_id']) || !isset($postData['locker_id'])) {
+                throw new \Exception('Données manquantes');
+            }
 
-        $lockerId = $this->getGet('id');
-        $assignment = $this->assignmentModel->getCurrentAssignment($lockerId);
+            $this->assignmentModel->returnLocker($postData['assignment_id'], $returnData);
 
-        if (!$assignment) {
             $_SESSION['flash'] = [
-                'type' => 'error',
-                'message' => 'Aucune attribution trouvée pour ce casier.'
+                'type' => 'success',
+                'message' => 'Casier restitué avec succès.'
             ];
             $this->redirect('/lockers');
             return;
+            } catch (\Exception $e) {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'message' => 'Une erreur est survenue lors de la restitution.'
+            ];
         }
-
-        $data = [
-            'title' => 'Restitution du casier',
-            'assignment' => $assignment
-        ];
-
-        echo $this->render('lockers/return', $data);
     }
 
     //methode getDetails 
@@ -159,9 +168,11 @@ class LockerController extends BaseController {
             }
         }
     
-        // Récupérer les informations du casier
-        $locker = $this->lockerModel->findById($id);
-        if (!$locker) {
+        // Utiliser la nouvelle méthode pour récupérer toutes les informations
+        $details = $this->assignmentModel->getFullLockerDetails($id);
+    
+        // Si aucun détail n'est trouvé, rediriger avec message d'erreur
+        if (!$details) {
             $_SESSION['flash'] = [
                 'type' => 'error',
                 'message' => 'Casier non trouvé.'
@@ -170,21 +181,12 @@ class LockerController extends BaseController {
             return;
         }
     
-        // Récupérer l'attribution actuelle si le casier est attribué
-        
-        $currentAssignment = null;
-        if ($locker['status'] === 'ATTRIBUE') {
-            $currentAssignment = $this->assignmentModel->getCurrentAssignment($id);
-        }
-    
-        // Récupérer l'historique des attributions
-        $history = $this->assignmentModel->getAssignmentHistory($id);
-    
+        // Préparer les données pour la vue
         $data = [
-            'title' => "Détails du casier {$locker['locker_number']}",
-            'locker' => $locker,
-            'currentAssignment' => $currentAssignment,
-            'history' => $history
+            'title' => "Détails du casier {$details['locker']['locker_number']}",
+            'locker' => $details['locker'],
+            'currentAssignment' => $details['currentAssignment'],
+            'history' => $details['history']
         ];
     
         echo $this->render('lockers/details', $data);

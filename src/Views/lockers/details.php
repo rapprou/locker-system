@@ -53,7 +53,7 @@
     <!-- Historique des attributions -->
 <div class="details-card">
     <h3>Historique des Attributions</h3>
-    <?php if (!empty($history)): ?>
+        <?php if (!empty($history)): ?>
         <table class="history-table">
             <thead>
                 <tr>
@@ -63,7 +63,7 @@
                     <th>Notes</th>
                     <th>Service</th>
                     <th>TS</th>
-                    <th>Date retour prévue</th>
+                    <th>Date retour</th>
                     <th>Type</th>
                 </tr>
             </thead>
@@ -80,7 +80,7 @@
                     <td><?= nl2br(htmlspecialchars($record['notes'])) ?></td>
                     <td><?= htmlspecialchars($record['service']) ?></td>
                     <td><?= htmlspecialchars($record['ts_name']) ?></td>
-                    <td><?= $record['expected_return_date'] ? date('d/m/Y', strtotime($record['expected_return_date'])) : '-' ?></td>
+                    <td><?= $record['return_date'] ? date('d/m/Y', strtotime($record['return_date'])) : '-' ?></td>
                     <td><?= htmlspecialchars($record['assignment_type'] ?? 'Attribution standard') ?></td>
                 </tr>
                 <?php endforeach; ?>
