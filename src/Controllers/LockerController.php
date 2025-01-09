@@ -99,61 +99,25 @@ class LockerController extends BaseController {
     }
 
     public function return() {
-        $lockerId = $this->getGet('id');
-        
-        // Gérer l'affichage du formulaire si ce n'est pas un POST
-        if (!$this->isPost()) {
-            // var_dump($lockerId);
-            $assignment = $this->assignmentModel->getCurrentAssignment($lockerId);
-            // var_dump($assignment);
-            // exit;
-            if (!$assignment) {
-                $_SESSION['flash'] = [
-                    'type' => 'error',
-                    'message' => 'Aucune attribution trouvée pour ce casier.'
-                ];
-                $this->redirect('/lockers');
-                return;
-            }
-     
-            $data = [
-                'title' => 'Restitution du casier',
-                'assignment' => $assignment
-            ];
-     
-            echo $this->render('lockers/return', $data);
-            return;
-        }
-     
-        // Traitement POST
-        $postData = $this->getPost();
-        // var_dump($postData);
-        try {
-            $returnData = [
-                'return_date' => $postData['return_date'],
-                'condition' => $postData['condition'],
-                'notes' => $postData['notes']
-            ];
+        if ($this->isPost()) {
+            $postData = $this->getPost();
             
-            // Vous devez vérifier que ces valeurs existent
-            if (!isset($postData['assignment_id']) || !isset($postData['locker_id'])) {
-                throw new \Exception('Données manquantes');
-            }
-
-            $this->assignmentModel->returnLocker($postData['assignment_id'], $returnData);
-
-            $_SESSION['flash'] = [
-                'type' => 'success',
-                'message' => 'Casier restitué avec succès.'
-            ];
-            $this->redirect('/lockers');
-            return;
-            } catch (\Exception $e) {
-            $_SESSION['flash'] = [
-                'type' => 'error',
-                'message' => 'Une erreur est survenue lors de la restitution.'
-            ];
+            $this->assignmentModel->returnLocker($postData['assignment_id'], [
+                'return_date' => $postData['return_date'],
+                'notes' => $postData['notes']
+            ]);
+    
+            header('Location: ' . BASE_PATH . '/lockers');
+            exit();
         }
+        
+        $lockerId = $this->getGet('id');
+        $assignment = $this->assignmentModel->getCurrentAssignment($lockerId);
+        
+        echo $this->render('lockers/return', [
+            'title' => 'Restitution du casier',
+            'assignment' => $assignment
+        ]);
     }
 
     //methode getDetails 
@@ -190,6 +154,15 @@ class LockerController extends BaseController {
         ];
     
         echo $this->render('lockers/details', $data);
+    }
+
+
+
+    protected function redirect($path) {
+        $redirectUrl = BASE_PATH . $path;
+        error_log("Redirection vers: " . $redirectUrl);
+        header('Location: ' . $redirectUrl);
+        exit();
     }
 
 

@@ -48,28 +48,25 @@ class LockerAssignment extends BaseModel {
 
 
     public function returnLocker($assignmentId, $returnData) {
-        // Mettre à jour l'attribution
         $sql = "UPDATE {$this->table} 
-                SET status = 'RETURNED', 
-                    return_date = :return_date,
-                    notes = CONCAT(notes, '\nRestitution: ', :notes)
-                WHERE id = :id";
-                
+                SET status = 'RETURNED',
+                    return_date = :return_date
+                WHERE id = :id 
+                AND status = 'ACTIVE'";
+        
         $this->query($sql, [
             ':return_date' => $returnData['return_date'],
-            ':notes' => $returnData['notes'],
             ':id' => $assignmentId
         ]);
         
-        // Récupérer le locker_id
         $assignment = $this->findById($assignmentId);
-        
-        // Mettre à jour le statut du casier
         if ($assignment) {
             $lockerModel = new Locker();
             $lockerModel->assign($assignment['locker_id'], 'DISPONIBLE');
         }
+        return true;
     }
+
     
     public function getAssignmentHistory($lockerId) {
         $sql = "SELECT 
