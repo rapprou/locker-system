@@ -22,9 +22,18 @@ class Locker extends BaseModel {
                 CONCAT(u.first_name, ' ', u.last_name) as user_name,
                 la.status as assignment_status
                 FROM {$this->table} l
-                LEFT JOIN locker_assignments la ON l.id = la.locker_id
+                LEFT JOIN (
+                    SELECT la1.*
+                    FROM locker_assignments la1
+                    WHERE la1.assignment_date = (
+                        SELECT MAX(assignment_date)
+                        FROM locker_assignments la2
+                        WHERE la2.locker_id = la1.locker_id
+                    )
+                ) la ON l.id = la.locker_id
                 LEFT JOIN users u ON la.user_id = u.id
                 ORDER BY CAST(SUBSTRING(l.locker_number, 1) AS SIGNED)";
+        
         return $this->query($sql)->fetchAll();
     }
     

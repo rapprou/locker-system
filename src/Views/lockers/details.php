@@ -31,23 +31,32 @@
 
     <!-- Attribution actuelle si le casier est attribué -->
     <?php if ($locker['status'] === 'ATTRIBUE' && isset($currentAssignment)): ?>
-    <div class="details-card">
-        <h3>Attribution Actuelle</h3>
-        <div class="info-grid">
-            <div class="info-item">
-                <label>Utilisateur:</label>
-                <span><?= htmlspecialchars($currentAssignment['first_name'] . ' ' . $currentAssignment['last_name']) ?></span>
-            </div>
-            <div class="info-item">
-                <label>Date d'attribution:</label>
-                <span><?= date('d/m/Y', strtotime($currentAssignment['assignment_date'])) ?></span>
-            </div>
-            <div class="info-item">
-                <label>Notes:</label>
-                <span><?= nl2br(htmlspecialchars($currentAssignment['notes'])) ?></span>
-            </div>
+        <div class="details-card">
+            <h3>Attribution Actuelle</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Utilisateur:</label>
+                        <span><?= htmlspecialchars($currentAssignment['first_name'] ?? '') . ' ' . htmlspecialchars($currentAssignment['last_name'] ?? '') ?></span>
+                    </div>   
+                    <div class="info-item">
+                        <label>Service:</label>
+                        <span><?= htmlspecialchars($currentAssignment['service'] ?? '-') ?></span>
+                    </div>
+                    <div class="info-item">
+                        <label>TS:</label>
+                        <span><?= $currentAssignment['ts_name'] ? htmlspecialchars($currentAssignment['ts_name']) : '-' ?></span>
+                    </div>
+                    <div class="info-item">
+                        <label>Date retour prévue:</label>
+                        <span><?= $currentAssignment['expected_return_date'] ? date('d/m/Y', strtotime($currentAssignment['expected_return_date'])) : '-' ?></span>
+                    </div>
+                    <div class="info-item">
+                        <label>TS</label>
+                        <span><?= $currentAssignment['ts_name'] ? htmlspecialchars($currentAssignment['ts_name']) : '-' ?></span>                                                                                                   
+                    </div>
+                    
+                </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <!-- Historique des attributions -->

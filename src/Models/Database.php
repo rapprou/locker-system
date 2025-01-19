@@ -4,7 +4,7 @@ namespace App\Models;
 use PDO;
 use PDOException;
 
-class Database {
+class Database { 
     private static $instance = null;
     private $connection;
 
@@ -46,5 +46,6 @@ class Database {
         } catch (PDOException $e) {
             die("Erreur de requête : " . $e->getMessage());
         }
-    }
+    }    
+    
 }

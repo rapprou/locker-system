@@ -17,17 +17,23 @@ class LockerAssignment extends BaseModel {
         return $assignmentId;
     }
     
+    // recuperer l'attribution actuelle d'un casier
+
     public function getCurrentAssignment($lockerId) {
         $sql = "SELECT 
-            la.*,
-            l.locker_number,
-            u.first_name,
-            u.last_name
-        FROM {$this->table} la
-        JOIN lockers l ON la.locker_id = l.id
-        JOIN users u ON la.user_id = u.id
-        WHERE la.locker_id = :locker_id 
-        AND la.status = 'ATTRIBUE'";
+        la.*,
+        l.locker_number, 
+        u.first_name,
+        u.last_name,
+        la.service,
+        la.ts_name,
+        la.expected_return_date,
+        la.notes
+    FROM {$this->table} la
+    JOIN lockers l ON la.locker_id = l.id
+    JOIN users u ON la.user_id = u.id
+    WHERE la.locker_id = :locker_id 
+    AND la.status = 'ATTRIBUE'";
      
         $result = $this->query($sql, [':locker_id' => $lockerId])->fetch();
      
@@ -75,8 +81,8 @@ class LockerAssignment extends BaseModel {
             la.status,
             la.notes,
             la.service,
-            COALESCE(la.ts_name, '-') as ts_name,
-            la.return_date,  
+            la.ts_name,
+            la.expected_return_date,  
             u.first_name,
             u.last_name
         FROM {$this->table} la
@@ -86,6 +92,7 @@ class LockerAssignment extends BaseModel {
                 
         return $this->query($sql, [':locker_id' => $lockerId])->fetchAll();
     }
+    
     
     public function getAssignmentDetails() {
         $sql = "SELECT DISTINCT
@@ -109,39 +116,40 @@ class LockerAssignment extends BaseModel {
         return $this->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    
     public function getFullLockerDetails($lockerId) {
-        // Récupérer les informations de base du casier
-        $lockerSql = "SELECT l.*, 
-            COALESCE(current_assignment.user_id, NULL) as current_user_id,
-            current_assignment.assignment_date as current_assignment_date,
-            current_assignment.notes as current_assignment_notes,
-            u.first_name, u.last_name
+        $sql = "SELECT l.*, 
+            la.id as assignment_id,
+            la.user_id,
+            la.assignment_date,
+            la.notes,
+            la.service,
+            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'TS:', -1), '\n', 1) as ts_name,
+            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'Date retour prévue:', -1), '\n', 1) as extracted_return_date,
+            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'Notes:', -1), '\n', 1) as extracted_notes,
+            u.first_name, 
+            u.last_name
         FROM lockers l
-        LEFT JOIN (
-            SELECT * FROM {$this->table} 
-            WHERE status = 'ACTIVE'
-        ) current_assignment ON l.id = current_assignment.locker_id
-        LEFT JOIN users u ON current_assignment.user_id = u.id
+        LEFT JOIN {$this->table} la ON l.id = la.locker_id AND la.status = 'ATTRIBUE'
+        LEFT JOIN users u ON la.user_id = u.id
         WHERE l.id = :locker_id";
     
-        $locker = $this->query($lockerSql, [':locker_id' => $lockerId])->fetch();
-        if (!$locker) {
-            return null;
-        }
-    
-        // Récupérer l'historique
-        $history = $this->getAssignmentHistory($lockerId);
-    
+        $locker = $this->query($sql, [':locker_id' => $lockerId])->fetch();
+        
+        $currentAssignment = $locker['user_id'] ? [
+            'first_name' => $locker['first_name'],
+            'last_name' => $locker['last_name'],
+            'assignment_date' => $locker['assignment_date'],
+            'service' => $locker['service'],
+            'ts_name' => trim($locker['ts_name']) ?: '-',
+            'expected_return_date' => trim($locker['extracted_return_date']) ?: '-',
+            'notes' => trim($locker['extracted_notes']) ?: '-'
+        ] : null;
+        
         return [
             'locker' => $locker,
-            'currentAssignment' => $locker['current_user_id'] ? [
-                'first_name' => $locker['first_name'],
-                'last_name' => $locker['last_name'],
-                'assignment_date' => $locker['current_assignment_date'],
-                'notes' => $locker['current_assignment_notes']
-            ] : null,
-            'history' => $history
+            'currentAssignment' => $currentAssignment,
+            'history' => $this->getAssignmentHistory($lockerId)
         ];
     }
-    
 }
