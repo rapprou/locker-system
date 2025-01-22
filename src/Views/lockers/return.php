@@ -6,7 +6,7 @@
    <?php if (isset($assignment)): ?>
    <div class="return-info">
        <p><strong>Casier N°:</strong> <?= htmlspecialchars($assignment['locker_number']) ?></p>
-       <p><strong>Utilisateur:</strong> <?= htmlspecialchars($assignment['first_name']) ?></p>
+       <p><strong>Utilisateur:</strong> <?= htmlspecialchars($assignment['full_name']) ?></p>
        <p><strong>Date d'attribution:</strong> <?= date('d/m/Y', strtotime($assignment['assignment_date'])) ?></p>
 
        <form method="POST" action="<?= BASE_PATH ?>/lockers/return">

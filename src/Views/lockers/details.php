@@ -44,20 +44,27 @@
                     </div>
                     <div class="info-item">
                         <label>TS:</label>
-                        <span><?= $currentAssignment['ts_name'] ? htmlspecialchars($currentAssignment['ts_name']) : '-' ?></span>
+                        <span><?= htmlspecialchars($currentAssignment['ts_name'] ?? '-') ?></span>
                     </div>
                     <div class="info-item">
                         <label>Date retour prévue:</label>
                         <span><?= $currentAssignment['expected_return_date'] ? date('d/m/Y', strtotime($currentAssignment['expected_return_date'])) : '-' ?></span>
                     </div>
                     <div class="info-item">
-                        <label>TS</label>
-                        <span><?= $currentAssignment['ts_name'] ? htmlspecialchars($currentAssignment['ts_name']) : '-' ?></span>                                                                                                   
-                    </div>
+                    
                     
                 </div>
         </div>
     <?php endif; ?>
+
+    <!-- bouton retour a la liste et restitution -->
+    <div class="details-actions">
+        <a href="<?= BASE_PATH ?>/lockers" class="button">Retour à la liste</a>
+        <?php if ($locker['status'] === 'ATTRIBUE'): ?>
+            <a href="<?= BASE_PATH ?>/lockers/return?id=<?= $locker['id'] ?>" 
+               class="button button-warning">Restituer</a>
+        <?php endif; ?>
+    </div>
 
     <!-- Historique des attributions -->
 <div class="details-card">
@@ -98,7 +105,7 @@
     <?php else: ?>
         <p class="no-data">Aucun historique d'attribution disponible</p>
     <?php endif; ?>
-</div>
+    </div>
 
     <!-- Actions -->
     <div class="details-actions">

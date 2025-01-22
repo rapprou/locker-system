@@ -23,35 +23,24 @@ class LockerAssignment extends BaseModel {
         $sql = "SELECT 
         la.*,
         l.locker_number, 
+        CONCAT(u.first_name, ' ', COALESCE(u.last_name, '')) as full_name,
         u.first_name,
         u.last_name,
         la.service,
         la.ts_name,
         la.expected_return_date,
         la.notes
-    FROM {$this->table} la
-    JOIN lockers l ON la.locker_id = l.id
-    JOIN users u ON la.user_id = u.id
-    WHERE la.locker_id = :locker_id 
-    AND la.status = 'ATTRIBUE'";
-     
+        FROM {$this->table} la
+        JOIN lockers l ON la.locker_id = l.id
+        JOIN users u ON la.user_id = u.id
+        WHERE la.locker_id = :locker_id 
+        AND la.status = 'ATTRIBUE'
+        ORDER BY la.assignment_date DESC
+        LIMIT 1";
+    
         $result = $this->query($sql, [':locker_id' => $lockerId])->fetch();
-     
-        if ($result) {
-            // Sauvegarder les notes originales
-            $notes = $result['notes'];
-            $result['original_notes'] = $notes;
-     
-            // Mise à jour des champs extraits
-            $result['service'] = 'RSA';
-            $result['ts_name'] = 'Mathilde';
-            $result['expected_return_date'] = '2025-01-17';
-            $result['notes'] = 'vvvv';
-        }
-     
         return $result;
     }
-
 
     public function returnLocker($assignmentId, $returnData) {
         $sql = "UPDATE {$this->table} 
@@ -118,38 +107,96 @@ class LockerAssignment extends BaseModel {
 
     
     public function getFullLockerDetails($lockerId) {
+        // 1. Récupérer les informations du casier
         $sql = "SELECT l.*, 
             la.id as assignment_id,
             la.user_id,
             la.assignment_date,
             la.notes,
             la.service,
-            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'TS:', -1), '\n', 1) as ts_name,
-            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'Date retour prévue:', -1), '\n', 1) as extracted_return_date,
-            SUBSTRING_INDEX(SUBSTRING_INDEX(la.notes, 'Notes:', -1), '\n', 1) as extracted_notes,
+            la.ts_name,
+            la.expected_return_date,
             u.first_name, 
             u.last_name
         FROM lockers l
-        LEFT JOIN {$this->table} la ON l.id = la.locker_id AND la.status = 'ATTRIBUE'
+        LEFT JOIN (
+            SELECT * FROM {$this->table} 
+            WHERE status = 'ATTRIBUE'
+            ORDER BY assignment_date DESC
+            LIMIT 1
+        ) la ON l.id = la.locker_id
         LEFT JOIN users u ON la.user_id = u.id
         WHERE l.id = :locker_id";
     
         $locker = $this->query($sql, [':locker_id' => $lockerId])->fetch();
         
+        // 2. Préparer l'attribution actuelle
         $currentAssignment = $locker['user_id'] ? [
             'first_name' => $locker['first_name'],
             'last_name' => $locker['last_name'],
             'assignment_date' => $locker['assignment_date'],
-            'service' => $locker['service'],
-            'ts_name' => trim($locker['ts_name']) ?: '-',
-            'expected_return_date' => trim($locker['extracted_return_date']) ?: '-',
-            'notes' => trim($locker['extracted_notes']) ?: '-'
+            'service' => $this->extractServiceFromNotes($locker['notes']),
+            'ts_name' => $this->extractTsNameFromNotes($locker['notes']),
+            'expected_return_date' => $locker['expected_return_date'] ?: '-',
+            'notes' => $locker['notes'] ?: '-'
         ] : null;
+        
+        // 3. Récupérer l'historique (seulement les attributions terminées)
+        $history = $this->query(
+            "SELECT 
+                la.assignment_date,
+                la.status,
+                la.notes,
+                la.service,
+                la.ts_name,
+                la.return_date,
+                u.first_name,
+                u.last_name
+            FROM {$this->table} la
+            JOIN users u ON la.user_id = u.id
+            WHERE la.locker_id = :locker_id 
+            AND la.status NOT IN ('ATTRIBUE')
+            ORDER BY la.assignment_date DESC",
+            [':locker_id' => $lockerId]
+        )->fetchAll();
         
         return [
             'locker' => $locker,
             'currentAssignment' => $currentAssignment,
-            'history' => $this->getAssignmentHistory($lockerId)
+            'history' => $history
         ];
     }
+    
+    // Modifié pour enlever la valeur par défaut Mathilde
+    private function extractTsNameFromNotes($notes) {
+        if (empty($notes)) {
+            return '-';
+        }
+        
+        if (strpos($notes, 'TS:') !== false) {
+            $parts = explode('TS:', $notes);
+            if (isset($parts[1])) {
+                return trim(explode("\n", $parts[1])[0]);
+            }
+        }
+        
+        return '-';  // Retourne - si pas trouvé au lieu de Mathilde
+    }
+    
+    // Nouvelle méthode pour extraire le service
+    private function extractServiceFromNotes($notes) {
+        if (empty($notes)) {
+            return '-';
+        }
+        
+        if (strpos($notes, 'Service:') !== false) {
+            $parts = explode('Service:', $notes);
+            if (isset($parts[1])) {
+                return trim(explode("\n", $parts[1])[0]);
+            }
+        }
+        
+        return '-';
+    }
+
 }
